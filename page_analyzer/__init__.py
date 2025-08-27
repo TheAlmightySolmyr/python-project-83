@@ -1,7 +1,3 @@
-from flask import Flask
+from page_analyzer.app import app
 
-app = Flask(__name__)
-
-@app.route('/')
-def hello_world():
-    return 'hello'
+__all__ = ['app']
