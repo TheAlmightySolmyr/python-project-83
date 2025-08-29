@@ -20,7 +20,7 @@ def get_start_page():
 
 
 @app.route('/urls')
-def get_url():
+def get_urls_page():
     return render_template('urls.html')
 
 
