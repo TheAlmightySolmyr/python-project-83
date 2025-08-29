@@ -1,7 +1,7 @@
 import os
+from datetime import datetime
 
 import psycopg2
-from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request
 from validators import url as validate
@@ -30,7 +30,8 @@ def post_url():
     url = formed.get('url')
     if validate(url):
         with conn.cursor() as curs:
-            curs.execute('INSERT INTO urls(name, created_at) VALUES (%s, %s);', (url, datetime.now()))
+            curs.execute('INSERT INTO urls(name, created_at) VALUES (%s, %s);', 
+                         (url, datetime.now()))
             flash('Your url was successfully added', 'success')
     else:
         flash('url has mistakes', 'error')
