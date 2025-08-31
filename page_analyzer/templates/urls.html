@@ -52,8 +52,14 @@
                         </tr>
                         {% for row in table %}
                         <tr>
-                            <td>{{row[0]}}</td>
-                            <td>{{row[1]}}</td>
+                            <td>
+                                <a href="{{ url_for('get_url_page', id=row[0]) }}"
+                                    class="text-decoration-none">{{row[0]}}</a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('get_url_page', id=row[0]) }}"
+                                    class="text-decoration-none">{{row[1]}}</a>
+                            </td>
                         </tr>
                         {% endfor %}
                     </thead>

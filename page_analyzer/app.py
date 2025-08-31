@@ -3,7 +3,7 @@ from datetime import datetime
 
 import psycopg2
 from dotenv import load_dotenv
-from flask import Flask, flash, redirect, render_template, request
+from flask import Flask, flash, redirect, render_template, request, url_for
 from validators import url as validate
 
 load_dotenv()
@@ -50,3 +50,25 @@ def post_url():
             flash('URL was successfully added', 'success')
     
     return redirect('/urls')
+
+@app.route('/urls/<id>')
+def get_url_page(id):
+    with conn.cursor() as curs:
+        curs.execute('SELECT * FROM urls WHERE id = %s;', (id,))
+        url = curs.fetchone()
+        
+        if not url:
+            flash('Сайт не найден', 'error')
+            return redirect('/urls')
+        
+        try:
+            curs.execute('''
+                SELECT * FROM url_checks 
+                WHERE url_id = %s 
+                ORDER BY created_at DESC;
+            ''', (id,))
+            checks = curs.fetchall()
+        except:
+            checks = []
+    
+    return render_template('url_detail.html', url=url, checks=checks)
