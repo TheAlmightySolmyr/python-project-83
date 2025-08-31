@@ -50,6 +50,12 @@
                             <th>Последняя проверка</th>
                             <th>Код ответа</th>
                         </tr>
+                        {% for row in table %}
+                        <tr>
+                            <td>{{row[0]}}</td>
+                            <td>{{row[1]}}</td>
+                        </tr>
+                        {% endfor %}
                     </thead>
                     <tbody>
 

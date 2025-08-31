@@ -22,7 +22,10 @@ def get_start_page():
 
 @app.route('/urls')
 def get_urls_page():
-    return render_template('urls.html')
+    with conn.cursor() as curs:
+        curs.execute('SELECT * FROM urls ORDER BY id DESC;')
+        table = curs.fetchall()            
+    return render_template('urls.html', table=table)
 
 
 @app.post('/urls')
