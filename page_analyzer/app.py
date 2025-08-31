@@ -54,7 +54,6 @@ def post_url():
 @app.route('/urls/<int:id>')
 def get_url_page(id):
     with conn.cursor() as curs:
-        # Получаем данные URL по ID
         curs.execute('SELECT * FROM urls WHERE id = %s;', (id,))
         url = curs.fetchone()
         
@@ -62,7 +61,6 @@ def get_url_page(id):
             flash('Сайт не найден', 'error')
             return redirect('/urls')
         
-        # Получаем проверки для этого URL (если таблица существует)
         try:
             curs.execute('''
                 SELECT * FROM url_checks 
