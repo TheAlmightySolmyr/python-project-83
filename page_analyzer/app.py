@@ -23,8 +23,19 @@ def get_start_page():
 @app.route('/urls')
 def get_urls_page():
     with conn.cursor() as curs:
-        curs.execute('SELECT * FROM urls ORDER BY id DESC;')
-        table = curs.fetchall()            
+        curs.execute('''
+            SELECT 
+                u.id, 
+                u.name, 
+                MAX(uc.created_at) as last_check_date,
+                (SELECT status_code FROM url_checks WHERE url_id = u.id ORDER BY created_at DESC LIMIT 1) as last_status_code
+            FROM urls u
+            LEFT JOIN url_checks uc ON u.id = uc.url_id
+            GROUP BY u.id, u.name
+            ORDER BY u.id DESC;
+        ''')
+        table = curs.fetchall()
+    
     return render_template('urls.html', table=table)
 
 
@@ -61,19 +72,27 @@ def get_url_page(id):
             flash('Сайт не найден', 'error')
             return redirect('/urls')
         
-        try:
-            curs.execute('''
-                SELECT * FROM url_checks 
-                WHERE url_id = %s 
-                ORDER BY created_at DESC;
-            ''', (id,))
-            checks = curs.fetchall()
-        except:
-            checks = []
+        curs.execute('''
+            SELECT * FROM url_checks 
+            WHERE url_id = %s 
+            ORDER BY created_at DESC;
+        ''', (id,))
+        checks = curs.fetchall()
     
     return render_template('url_detail.html', url=url, checks=checks)
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id):
-    flash('Проверка запущена', 'success')
+    try:
+        with conn.cursor() as curs:
+            curs.execute('''
+                INSERT INTO url_checks (url_id, created_at)
+                VALUES (%s, %s)
+            ''', (id, datetime.now()))
+            
+            flash('Страница успешно проверена', 'success')
+    except Exception as e:
+        flash('Ошибка при проверке', 'error')
+        print(f"Error: {e}")
+    
     return redirect(url_for('get_url_page', id=id))

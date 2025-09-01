@@ -34,33 +34,31 @@
             {% endif %}
             {% endwith %}
 
-            <h1>Сайт: {{ url[1] if url else '' }}</h1>
+            <h1>Сайт: {{ url[1] }}</h1>
 
             <div class="table-responsive">
                 <table class="table table-bordered table-hover text-nowrap" data-test="url">
                     <tbody>
                         <tr>
                             <td>ID</td>
-                            <td>{{ url[0] if url else '' }}</td>
+                            <td>{{ url[0] }}</td>
                         </tr>
                         <tr>
                             <td>Имя</td>
                             <td>
-                                <a href="{{ url[1] if url else '#' }}" target="_blank">
-                                    {{ url[1] if url else '' }}
-                                </a>
+                                <a href="{{ url[1] }}" target="_blank">{{ url[1] }}</a>
                             </td>
                         </tr>
                         <tr>
                             <td>Дата создания</td>
-                            <td>{{ url[2].strftime('%Y-%m-%d %H:%M:%S') if url and url[2] else '' }}</td>
+                            <td>{{ url[2].strftime('%Y-%m-%d %H:%M:%S') }}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
 
             <h2 class="mt-5 mb-3">Проверки</h2>
-            <form method="post" action="{{ url_for('check_url', id=url[0]) if url else '#' }}">
+            <form method="post" action="{{ url_for('check_url', id=url[0]) }}">
                 <input type="submit" class="btn btn-primary" value="Запустить проверку">
             </form>
 

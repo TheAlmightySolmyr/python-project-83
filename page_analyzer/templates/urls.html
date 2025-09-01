@@ -54,12 +54,28 @@
                         {% for row in table %}
                         <tr>
                             <td>
-                                <a href="{{ url_for('get_url_page', id=row[0]) }}"
-                                    class="text-decoration-none">{{row[0]}}</a>
+                                <a href="{{ url_for('get_url_page', id=row[0]) }}" class="text-decoration-none fw-bold">
+                                    {{ row[0] }}
+                                </a>
                             </td>
                             <td>
-                                <a href="{{ url_for('get_url_page', id=row[0]) }}"
-                                    class="text-decoration-none">{{row[1]}}</a>
+                                <a href="{{ url_for('get_url_page', id=row[0]) }}" class="text-decoration-none">
+                                    {{ row[1] }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if row[2] %}
+                                {{ row[2].strftime('%Y-%m-%d %H:%M:%S') }}
+                                {% else %}
+                                —
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row[3] %}
+                                {{ row[3] }}
+                                {% else %}
+                                —
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
