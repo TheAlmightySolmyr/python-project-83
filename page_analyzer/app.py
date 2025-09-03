@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 
 import psycopg2
+import requests as req
+from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 from validators import url as validate
@@ -89,16 +91,61 @@ def get_url_page(id):
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id):
-    try:
+    with conn.cursor() as curs:
+        curs.execute('''SELECT name 
+                        FROM urls 
+                        WHERE id = %s;''',
+                        (id,))
+        row = curs.fetchone()
+        if not row:
+            flash('Сайт не найден', 'error')
+            return redirect('/urls')
+        url = row[0]
+
+    status_code = is_available(url)
+
+    if status_code:
         with conn.cursor() as curs:
             curs.execute('''
-                INSERT INTO url_checks (url_id, created_at)
-                VALUES (%s, %s)
-            ''', (id, datetime.now()))
-            
+                INSERT INTO url_checks (url_id, status_code, created_at)
+                VALUES (%s, %s, %s)
+            ''', (id, status_code, datetime.now()))
             flash('Страница успешно проверена', 'success')
-    except Exception as e:
-        flash('Ошибка при проверке', 'error')
-        print(f"Error: {e}")
+    else:
+        pass
     
     return redirect(url_for('get_url_page', id=id))
+
+
+def is_available(link):
+    try:
+        url = req.get(link)
+        url.raise_for_status()
+        return url.status_code
+    except req.RequestException:
+        flash('Произошла ошибка при проверке')
+        return None
+    
+
+def get_h1(url):
+    html = req.get(url).text
+    soup = BeautifulSoup(html, 'html.parser')
+    h1 = soup.find('h1')
+    if h1:
+        return h1.get_text()
+
+
+def get_title(url):
+    html = req.get(url).text
+    soup = BeautifulSoup(html, 'html.parser')
+    title = soup.find('title')
+    if title:
+        return title.get_text()
+    
+
+def get_content(url):
+    html = req.get(url).text
+    soup = BeautifulSoup(html, 'html.parser')
+    content = soup.find('meta', attrs={'name': 'description'})
+    if content:
+        return content.get('content')
