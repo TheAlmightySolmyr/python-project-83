@@ -105,11 +105,15 @@ def check_url(id):
     status_code = is_available(url)
 
     if status_code:
+        h1 = get_h1(url)
+        title = get_title(url)
+        content = get_content(url)
         with conn.cursor() as curs:
             curs.execute('''
-                INSERT INTO url_checks (url_id, status_code, created_at)
-                VALUES (%s, %s, %s)
-            ''', (id, status_code, datetime.now()))
+            INSERT INTO 
+            url_checks (url_id, status_code, h1, title, description, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s);
+            ''', (id, status_code, h1, title, content, datetime.now()))
             flash('Страница успешно проверена', 'success')
     else:
         pass
