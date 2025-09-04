@@ -109,13 +109,14 @@ def check_url(id):
             pool.putconn(conn)
             return redirect('/urls')
         url = row[0]
-
+    pool.putconn(conn)
     status_code = is_available(url)
 
     if status_code:
         h1 = get_h1(url)
         title = get_title(url)
         content = get_content(url)
+        conn = pool.getconn()
         with conn.cursor() as curs:
             curs.execute('''
             INSERT INTO 
@@ -124,9 +125,10 @@ def check_url(id):
             ''', (id, status_code, h1, title, content, datetime.now()))
             flash('Страница успешно проверена', 'success')
             conn.commit()
+        pool.putconn(conn)
+
     else:
         pass
-    pool.putconn(conn)
     return redirect(url_for('get_url_page', id=id))
 
 
