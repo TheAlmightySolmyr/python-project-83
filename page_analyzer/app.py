@@ -52,7 +52,7 @@ def post_url():
     conn = pool.getconn()
 
     if not validate(url) or len(url) >= MAX_URL_LENGTH:
-        flash('URL has mistakes', 'error')
+        flash('Некорректный URL', 'error')
         pool.putconn(conn)
         return redirect('/')
     
@@ -61,13 +61,13 @@ def post_url():
         existing_url = curs.fetchone()
         
         if existing_url:
-            flash('URL already exists in database', 'info')
+            flash('Страница уже существует', 'info')
         else:
             curs.execute('''
                         INSERT INTO urls(name, created_at) 
                         VALUES (%s, %s);
                         ''', (url, datetime.now()))
-            flash('URL was successfully added', 'success')
+            flash('Страница успешно добавлена', 'success')
         conn.commit()
     pool.putconn(conn)    
     return redirect('/urls')
