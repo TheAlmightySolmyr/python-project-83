@@ -13,8 +13,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
-pool = SimpleConnectionPool(DATABASE_URL,  min_connections =1,
-                            max_connections=1,) 
+pool = SimpleConnectionPool(1, 1, DATABASE_URL)  
 MAX_URL_LENGTH = 255
 
 
