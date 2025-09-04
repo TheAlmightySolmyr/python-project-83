@@ -53,6 +53,7 @@ def post_url():
 
     if not validate(url) or len(url) >= MAX_URL_LENGTH:
         flash('URL has mistakes', 'error')
+        pool.putconn(conn)
         return redirect('/')
     
     with conn.cursor() as curs:
@@ -81,6 +82,7 @@ def get_url_page(id):
         
         if not url:
             flash('Сайт не найден', 'error')
+            pool.putconn(conn)
             return redirect('/urls')
         
         curs.execute('''
@@ -104,6 +106,7 @@ def check_url(id):
         row = curs.fetchone()
         if not row:
             flash('Сайт не найден', 'error')
+            pool.putconn(conn)
             return redirect('/urls')
         url = row[0]
 
