@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 
+from psycopg2.pool import SimpleConnectionPool
 import psycopg2
 import requests as req
 from bs4 import BeautifulSoup
@@ -12,8 +13,8 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
-conn = psycopg2.connect(DATABASE_URL)
-conn.autocommit = True
+pool = SimpleConnectionPool(DATABASE_URL,  min_connections =1,
+                            max_connections=1,) 
 MAX_URL_LENGTH = 255
 
 
@@ -24,6 +25,7 @@ def get_start_page():
 
 @app.route('/urls')
 def get_urls_page():
+    conn = pool.getconn()
     with conn.cursor() as curs:
         curs.execute('''
             SELECT 
@@ -41,14 +43,15 @@ def get_urls_page():
             ORDER BY u.id DESC;
         ''')
         table = curs.fetchall()
-    
+    pool.putconn(conn)
     return render_template('urls.html', table=table)
 
 
 @app.post('/urls')
 def post_url():
     url = request.form.get('url')
-    
+    conn = pool.getconn()
+
     if not validate(url) or len(url) >= MAX_URL_LENGTH:
         flash('URL has mistakes', 'error')
         return redirect('/')
@@ -65,12 +68,14 @@ def post_url():
                         VALUES (%s, %s);
                         ''', (url, datetime.now()))
             flash('URL was successfully added', 'success')
-    
+        conn.commit()
+    pool.putconn(conn)    
     return redirect('/urls')
 
 
 @app.route('/urls/<int:id>')
 def get_url_page(id):
+    conn = pool.getconn()
     with conn.cursor() as curs:
         curs.execute('SELECT * FROM urls WHERE id = %s;', (id,))
         url = curs.fetchone()
@@ -85,12 +90,13 @@ def get_url_page(id):
             ORDER BY created_at DESC;
         ''', (id,))
         checks = curs.fetchall()
-    
+    pool.putconn(conn)
     return render_template('url_detail.html', url=url, checks=checks)
 
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id):
+    conn = pool.getconn()
     with conn.cursor() as curs:
         curs.execute('''SELECT name 
                         FROM urls 
@@ -115,9 +121,10 @@ def check_url(id):
             VALUES (%s, %s, %s, %s, %s, %s);
             ''', (id, status_code, h1, title, content, datetime.now()))
             flash('Страница успешно проверена', 'success')
+            conn.commit()
     else:
         pass
-    
+    pool.putconn(conn)
     return redirect(url_for('get_url_page', id=id))
 
 
