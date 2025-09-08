@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from urllib.parse import urlparse
 
 import requests as req
 from bs4 import BeautifulSoup
@@ -14,6 +15,17 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
 pool = SimpleConnectionPool(1, 1, DATABASE_URL)  
 MAX_URL_LENGTH = 255
+
+
+def normalize_url(url):
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    
+    parsed = urlparse(url)
+    scheme = parsed.scheme.lower()
+    netloc = parsed.netloc.lower().strip('/')
+    result = f'{scheme}://{netloc}'
+    return result
 
 
 def is_available(link):
@@ -82,14 +94,15 @@ def get_urls_page():
 def post_url():
     url = request.form.get('url')
     conn = pool.getconn()
+    normalized_url = normalize_url(url)
 
-    if not validate(url) or len(url) >= MAX_URL_LENGTH:
+    if not validate(normalized_url) or len(normalized_url) >= MAX_URL_LENGTH:
         flash('Некорректный URL', 'error')
         pool.putconn(conn)
         return render_template('start_page.html'), 422
     
     with conn.cursor() as curs:
-        curs.execute('SELECT id FROM urls WHERE name = %s;', (url,))
+        curs.execute('SELECT id FROM urls WHERE name = %s;', (normalized_url,))
         existing_url = curs.fetchone()
         
         if existing_url:
@@ -99,7 +112,7 @@ def post_url():
             curs.execute('''
                         INSERT INTO urls(name, created_at) 
                         VALUES (%s, %s) RETURNING id;
-                        ''', (url, datetime.now()))
+                        ''', (normalized_url, datetime.now()))
             url_id = curs.fetchone()[0]
             flash('Страница успешно добавлена', 'success')
         conn.commit()
