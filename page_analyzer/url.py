@@ -1,8 +1,8 @@
 from urllib.parse import urlparse
 
 import requests as req
-from validators import url as validate
 from bs4 import BeautifulSoup
+from validators import url as validate
 
 MAX_URL_LENGTH = 255
 

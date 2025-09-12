@@ -4,13 +4,14 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 from psycopg2.pool import SimpleConnectionPool
+
 from page_analyzer.url import (
-    validator,
     get_content,
     get_h1,
     get_title,
     is_available,
     normalize_url,
+    validator,
 )
 
 load_dotenv()
