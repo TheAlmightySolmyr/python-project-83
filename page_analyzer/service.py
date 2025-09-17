@@ -42,23 +42,3 @@ class DbManager:
             raise e
         finally:
             self.pool.putconn(conn)
-
-    # запасная универсальная функция
-    #
-    # def executioner(self, query, params=None, fetch_one=False, fetch_all=False):
-    #     conn = self.pool.getconn()
-    #     try:
-    #         with conn.cursor() as cursor:
-    #             cursor.execute(query, params)
-    #             conn.commit()
-    #             if fetch_one and fetch_all:
-    #                 return 'Нельзя использовать fetch_one и fetch_all одновременно'
-    #             if fetch_one:
-    #                 return cursor.fetchone()
-    #             if fetch_all:
-    #                 return cursor.fetchall()
-    #     except Exception as e:
-    #         conn.rollback()
-    #         raise e
-    #     finally:
-    #         self.pool.putconn(conn)
