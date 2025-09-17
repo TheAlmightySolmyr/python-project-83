@@ -1,102 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="Third project for Hexlet.io">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Анализатор страниц</title>
-</head>
+{% block title %}Сайты - Анализатор страниц{% endblock %}
 
-<body class="min-vh-100 d-flex flex-column">
-    <header class="flex-shrink-0">
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark px-3">
-            <a class="navbar-brand" href="/">Анализатор страниц</a>
-            <div id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item"><a class="nav-link " href="/urls">Сайты</a></li>
-                </ul>
-            </div>
-        </nav>
+{% block content %}
+<h1>Сайты</h1>
 
-    </header>
-
-
-
-    <main class="flex-grow-1">
-        <div class="container-lg mt-3">
-            <h1>Сайты</h1>
-            {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show"
-                role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+<div class="table-responsive">
+    <table class="table table-bordered table-hover text-nowrap" data-test="urls">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Последняя проверка</th>
+                <th>Код ответа</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in table %}
+            <tr>
+                <td>
+                    <a href="{{ url_for('get_url_page', id=row[0]) }}" class="text-decoration-none fw-bold">
+                        {{ row[0] }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ url_for('get_url_page', id=row[0]) }}" class="text-decoration-none">
+                        {{ row[1] }}
+                    </a>
+                </td>
+                <td>
+                    {% if row[2] %}
+                    {{ row[2].strftime('%Y-%m-%d %H:%M:%S') }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+                <td>
+                    {% if row[3] %}
+                    {{ row[3] }}
+                    {% else %}
+                    —
+                    {% endif %}
+                </td>
+            </tr>
             {% endfor %}
-            {% endif %}
-            {% endwith %}
-
-            <div class="table-responsive">
-                <table class="table table-bordered table-hover text-nowrap" data-test="urls">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Имя</th>
-                            <th>Последняя проверка</th>
-                            <th>Код ответа</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for row in table %}
-                        <tr>
-                            <td>
-                                <a href="{{ url_for('get_url_page', id=row[0]) }}" class="text-decoration-none fw-bold">
-                                    {{ row[0] }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="{{ url_for('get_url_page', id=row[0]) }}" class="text-decoration-none">
-                                    {{ row[1] }}
-                                </a>
-                            </td>
-                            <td>
-                                {% if row[2] %}
-                                {{ row[2].strftime('%Y-%m-%d %H:%M:%S') }}
-                                {% else %}
-                                —
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if row[3] %}
-                                {{ row[3] }}
-                                {% else %}
-                                —
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-
-        </div>
-    </main>
-    <footer class="border-top py-3 mt-5 flex-shrink-0">
-        <div class="container-lg">
-            <div class="text-center">
-                <a href="https://ru.hexlet.io/" target="_blank">Hexlet</a>
-            </div>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-        crossorigin="anonymous"></script>
-
-</body>
-
-</html>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
