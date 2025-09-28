@@ -4,7 +4,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, request, url_for
 
-from page_analyzer.service import DbManager
+from page_analyzer.db import DbManager
+from page_analyzer.service import UrlService as us
 from page_analyzer.url import (
     get_content,
     get_h1,
@@ -18,7 +19,7 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 DATABASE_URL = os.getenv('DATABASE_URL')
-pool = DbManager(DATABASE_URL)  
+db = DbManager(DATABASE_URL)  
 
 
 @app.route('/')
@@ -28,22 +29,7 @@ def get_start_page():
 
 @app.route('/urls')
 def get_urls_page():
-    query = '''
-            SELECT 
-                u.id, 
-                u.name, 
-                MAX(uc.created_at) as last_check_date,
-                (SELECT status_code 
-                 FROM url_checks 
-                 WHERE url_id = u.id 
-                 ORDER BY created_at DESC 
-                 LIMIT 1) as last_status_code
-            FROM urls u
-            LEFT JOIN url_checks uc ON u.id = uc.url_id
-            GROUP BY u.id, u.name
-            ORDER BY u.id DESC;
-        '''
-    table = pool.fetch_all(query)
+    table = us.get_urls_list(db)
     return render_template('urls.html', table=table)
 
 
@@ -56,50 +42,34 @@ def post_url():
         flash('Некорректный URL', 'error')
         return render_template('start_page.html'), 422
     
-    query_url = 'SELECT id FROM urls WHERE name =%s;'
-
-    existing_url = pool.fetch_one(query_url, (normalized_url,))
+    existing_url = us.get_id_by_name(db, normalized_url)
         
     if existing_url:
         flash('Страница уже существует', 'info')
         url_id = existing_url[0]
     else:
         time = datetime.now()
-        query_insert = '''
-                    INSERT INTO urls(name, created_at) 
-                    VALUES (%s, %s) RETURNING id;
-                    '''
-        url_id = pool.fetch_one(query_insert, (normalized_url, time))[0]
+        url_id = us.insert_name_time(db, normalized_url, time)
         flash('Страница успешно добавлена', 'success')
     return redirect(url_for('get_url_page', id=url_id))
 
 
 @app.route('/urls/<int:id>')
 def get_url_page(id):
-    query = 'SELECT * FROM urls WHERE id = %s;'
-    url = pool.fetch_one(query, (id,))
+    url = us.get_all_by_id(db, id)
     
     if not url:
         flash('Сайт не найден', 'error')
         return render_template('urls.html'), 422
     
-    query_checks = '''
-        SELECT * FROM url_checks 
-        WHERE url_id = %s 
-        ORDER BY created_at DESC;
-    '''
-    checks = pool.fetch_all(query_checks, (id,))
+    checks = us.get_all_by_id_ordered(db, id)
     return render_template('url_detail.html', url=url, checks=checks)
 
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id):
-    query_id = '''
-                SELECT name 
-                FROM urls 
-                WHERE id = %s;'''
+    row = us.get_name_by_id(db, id)
 
-    row = pool.fetch_one(query_id, (id,))
     if not row:
         flash('Сайт не найден', 'error')
         return render_template('urls.html'), 422
@@ -110,20 +80,10 @@ def check_url(id):
         h1 = get_h1(url)
         title = get_title(url)
         content = get_content(url)
-        query_insert = '''
-        INSERT INTO 
-        url_checks 
-            (url_id, status_code, h1, title, description, created_at)
-        VALUES (%s, %s, %s, %s, %s, %s);
-        '''
-        pool.execute(query_insert, (id, status_code, h1, title, content, time))
+        us.insert_url_checks(db, id, status_code, h1, title, content, time)
         flash('Страница успешно проверена', 'success')
     else:
-        query_error = '''
-            INSERT INTO url_checks (url_id, status_code, created_at)
-            VALUES (%s, %s, %s);
-        '''
-        pool.execute(query_error, (id, 0, time))
+        us.insert_error(db, id, time)
         flash('Произошла ошибка при проверке', 'danger')
         
     return redirect(url_for('get_url_page', id=id))
