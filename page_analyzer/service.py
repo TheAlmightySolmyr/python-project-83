@@ -27,7 +27,7 @@ class UrlService:
             SELECT name 
             FROM urls 
             WHERE id = %s;'''
-        name = self.fetch_one(query(id,))
+        name = self.fetch_one(query, (id,))
         return name
     
     def get_all_by_id(self, id):
