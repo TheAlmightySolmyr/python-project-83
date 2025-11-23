@@ -1,9 +1,6 @@
 ### link:
 https://analysepage.onrender.com/
 
-### Hexlet tests and linter status:
-[![Actions Status](https://github.com/TheAlmightySolmyr/python-project-83/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/TheAlmightySolmyr/python-project-83/actions)
-
 # Website Analyzer
 
 [![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
@@ -67,3 +64,6 @@ https://analysepage.onrender.com/
 *   `make database` - Инициализация базы данных (создание таблиц).
 *   `make lint` - Запуск линтера для проверки кода.
 *   `make test` - Запуск тестов.
+
+### Hexlet tests and linter status:
+[![Actions Status](https://github.com/TheAlmightySolmyr/python-project-83/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/TheAlmightySolmyr/python-project-83/actions)
